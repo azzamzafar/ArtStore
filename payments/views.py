@@ -1,18 +1,21 @@
 from ast import Or
+from operator import ge
 from typing import OrderedDict
+from urllib import response
 from django.db import DatabaseError
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render,redirect
 import razorpay
 from django.views.decorators.csrf import csrf_exempt
-from .forms import SignatureVerificationForm as svf
 import hmac,hashlib
 # Create your views here.
 
 def generate_signature(order_id,payment_id,key):
     msg = order_id+"|"+payment_id
 
-    signature = hmac.new(bytes(key,encoding='ascii'),bytes(msg,encoding='ascii'),digestmod=hashlib.sha256).hexdigest().upper()
+    signature = hmac.new(bytes(key,encoding='utf-8'),
+    bytes(msg,encoding='utf-8'),
+    digestmod=hashlib.sha256).hexdigest()
     return signature
 
 
@@ -47,47 +50,46 @@ def paymenthandler(request):
     key = "thfUqxKGoWOoFDtOQWoteIgc"
     
     if request.method=="POST":
-        order_id,payment_id,signature=None,None,None
+        
+        client = razorpay.Client(auth=(id,key))
+        created_order_id = client.order.all()['items'][0]['id']
+        # response order_id:
+        returned_order_id = request.POST['razorpay_order_id']
+
+        assert created_order_id==returned_order_id, "created order_id != returned order_id"
 
         try:
 
-           
-            order_id = request.POST.get('razorpay_order_id','')
-            payment_id = request.POST.get('razorpay_payment_id','')
-            signature = request.POST.get('razorpay_signature','')
-            print(request.POST)
-            print(f'{order_id}{type(order_id)}{type(payment_id)}{payment_id}{signature}{type(signature)}')
+            response_params={
+                'razorpay_order_id':created_order_id,
+                'razorpay_payment_id':request.POST['razorpay_payment_id'],
+                'razorpay_signature':request.POST['razorpay_signature']
+            }
         except KeyError:
-            return HttpResponseBadRequest()
-        #if form.is_valid():
+            raise "No such values in request.POST"
         
 
-        client = razorpay.Client(auth=(id,key))
-        created_order_id = client.order.all()['items'][-1]['id']
-        print(created_order_id==order_id[0])
-        print(type('created_order_id'))
-        response_param ={
-            'razorpay_order_id':order_id,
-            'razorpay_payment_id':payment_id,
-            'razorpay_signature':signature
-        }
-        #generated_signature = generate_signature(created_order_id,payment_id,key)
-        result = client.utility.verify_payment_signature(response_param)
-        if  result is None:
-            try:
-                if client.payments.fetch(payment_id)['status']=='captured':
-                    print('captured')
-                    return redirect(success,permanent=True)
-                
-            except:
-                return redirect(failure,permanent=True) 
-        else:
-            return redirect(failure,permanent=True)       
+        generated_signature = generate_signature(created_order_id,
+        response_params['razorpay_payment_id'],key)
+        
+        # result = hmac.compare_digest(generated_signature,response_params['razorpay_signature'])
+        # result = client.utility.verify_payment_signature(response_params)
+        assert generated_signature==response_params['razorpay_signature'], \
+        "type mismatch or value not equal b/w generated_signature and returned signature"
+        
+        if client.payment.fetch(response_params['razorpay_payment_id'])['status']=='captured':
+            print('captured')
+            return redirect(success,permanent=True)
+        
+        elif client.payment.fetch(response_params['razorpay_payment_id'])['status']=='failed':
+            return redirect(failure,permanent=True)
+
     else:
         return HttpResponseBadRequest()
 
 def success(request):
-    return render(request,'orders/track.html')
+    msg="Payment Successfully Captured."
+    return render(request,'payments/success.html',{"msg":msg})
 
 def failure(request):
-    return render(request,'payments/failure.html')
+    return render(request,'payments/failure.html',{"msg":"Failed: Could not Capture the Payment"})

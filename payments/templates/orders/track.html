@@ -1,3 +1,7 @@
 {% block content %}
-<strong> Track Your Orders </strong>
+<strong> Track Your Orders 
+    {% if msg %}
+    {{ msg }}
+    {% endif %}
+</strong>
 {% endblock %}
