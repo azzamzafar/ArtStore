@@ -1,1 +1,3 @@
 razorpay
+django-registration
+django-phonenumber-field
