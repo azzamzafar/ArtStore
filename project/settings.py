@@ -26,7 +26,11 @@ SECRET_KEY = 'django-insecure-m*%uhlx7i)0(o2$=*ot0bnc$ukqzma0zgotpjp==#*+e-qto%^
 DEBUG = True
 
 ALLOWED_HOSTS = []
+AUTH_USER_MODEL= "customers_auth.Customer"
 
+#django-registration
+ACCOUNT_ACTIVATION_DAYS = 7
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Application definition
 
@@ -39,6 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'payments',
     'customers_auth',
+    "crispy_forms",
+    "crispy_bootstrap5",
+    "phonenumber_field",
 ]
 
 MIDDLEWARE = [

@@ -1,3 +1,4 @@
 razorpay
 django-registration
-django-phonenumber-field
+
+django-phonenumber-field[phonenumberslite]
