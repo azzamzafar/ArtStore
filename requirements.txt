@@ -1,4 +1,4 @@
 razorpay
 django-registration
-
 django-phonenumber-field[phonenumberslite]
+crispy_bootstrap5

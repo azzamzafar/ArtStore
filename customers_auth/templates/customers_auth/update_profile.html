@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<div class="container justify-content-center">
+    <div class="row justify-content-center">
+        <div class="col">
+            <h6> Add Contact Details </h6> 
+            {% crispy form %}
+        </div>
+    </div>    
+</div>
+
+{% endblock %}

@@ -7,6 +7,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 # Create your models here.
 city_values = []
 state_values = []
+country_values = [("INDIA", "India")]
 with open("datafiles/city-state.csv", encoding="utf-8") as cityfile:
     csvreader = csv.reader(cityfile)
     header = next(csvreader)
@@ -21,7 +22,8 @@ def get_city_values():
 
 def get_state_values():
     return state_values
-
+def get_country_values():
+    return country_values
 
 class CustomerManager(UserManager):
     def _create_user(self, username, email, password, **extra_fields):
@@ -70,11 +72,10 @@ class Customer(AbstractUser):
 
     phone = PhoneNumberField(null=True)
 
-    COUNTRIES = [("INDIA", "India")]
-
+    
     country = models.CharField(
         _("country"),
-        choices=COUNTRIES,
+        choices=country_values,
         max_length=5,
         null=True,
     )
@@ -85,7 +86,7 @@ class Customer(AbstractUser):
 
     CITIES = city_values
 
-    city = models.CharField(_("state"), choices=CITIES, max_length=30, null=True)
+    city = models.CharField(_("city"), choices=CITIES, max_length=30, null=True)
 
     objects = CustomerManager()
 
