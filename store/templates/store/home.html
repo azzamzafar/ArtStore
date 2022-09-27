@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+<div class="row" style="width:80%; margin-left:20px;margin-top:10px;">
+    {% for product in Products %}
+    <div class="col col-md-4" style="margin-top:10px;">
+        <div class="card"style="width:18rem;height:15rem; background: #f6f6eb;">
+            <div class="card-body">
+                <h5 class="card-title">
+                    {{ product.name }}
+                </h5>
+                {% if product.available %}
+                <h6 class="card-subtitle text-muted"> In Stock </h6>
+                {% else %}
+                <h6 class="card-subtitle text-muted"> Out of Stock </h6>
+                {% endif %}
+                <p class="card-text">{{ product.description }} </p>
+                <strong> Amount: Rs {{ product.amount }}</strong>
+                <a href="#" class="btn btn-primary">Cart</a>
+                <a href="#" class="btn btn-primary">Buy</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
