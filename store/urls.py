@@ -1,5 +1,6 @@
 from django.urls import path
-from . import views as store_views
+from store.views import ProductListView, ProductDetailView
 urlpatterns = [
-    path('',store_views.home,name='home')
+    path('',ProductListView.as_view(),name='home'),
+    path("<int:pk>/",ProductDetailView.as_view(),name='Product-detail')
 ]

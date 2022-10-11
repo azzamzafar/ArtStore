@@ -3,12 +3,12 @@
 
 
 <div class="row" style="width:80%; margin-left:20px;margin-top:10px;">
-    {% for product in Products %}
+    {% for product in page_obj %}
     <div class="col col-md-4" style="margin-top:10px;">
         <div class="card"style="width:18rem;height:15rem; background: #f6f6eb;">
             <div class="card-body">
-                <h5 class="card-title">
-                    {{ product.name }}
+                <h5 class="card-title" ><a href="{% url 'Product-detail' product.id %}">
+                    {{ product.name }}</a>
                 </h5>
                 {% if product.available %}
                 <h6 class="card-subtitle text-muted"> In Stock </h6>
@@ -23,5 +23,22 @@
         </div>
     </div>
     {% endfor %}
+</div>
+<div class="pagination justify-content-center">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
 </div>
 {% endblock %}
