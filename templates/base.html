@@ -13,7 +13,7 @@
   <body>
     <nav class="navbar navbar-expand-lg bg-light">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#"> ArtStore </a>
+        <a class="navbar-brand" href="{% url 'home' %}"> ArtStore </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
           aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -29,14 +29,13 @@
             <li class="nav-item">
               <a class="nav-link active" href="#"> Calligraphy Art </a>
             </li>
-          </ul>
-          {% if request.user.is_active %}
+            {% if request.user.is_active %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">
               <Strong>Profile</Strong></a>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
-              <li><a class="dropdown-item" href="#">Cart</a></li>
+              <li><a class="dropdown-item" href="{% url 'cart' %}">Cart</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>
@@ -56,6 +55,11 @@
             </ul>
           </li>
           {% endif %}
+          </ul>
+          <span class="nav-item">
+              <a class="btn btn-outline-success me-2" href="{% url 'cart' %}" role="button">Cart</a>
+          </span>
+          
         </div>
       </div>
     </nav>

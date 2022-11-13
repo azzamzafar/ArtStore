@@ -17,8 +17,21 @@
                 {% endif %}
                 <p class="card-text">{{ product.description }} </p>
                 <strong> Amount: Rs {{ product.amount }}</strong>
-                <a href="#" class="btn btn-primary">Cart</a>
-                <a href="#" class="btn btn-primary">Buy</a>
+                <form method="post"></form>
+                <!-- {{ item_formset.management_form}}
+                {% for form in item_formset %} -->
+                        <strong>
+                             Qty:{{ my_form.Qty }}   
+                        </strong>
+                        <input type="hidden" value="{{ product.id }}" name="product">
+
+                    <button class='btn btn-primary' 
+                    type="submit" name="action" value="item"> Cart </button>
+                    <button class='btn btn-primary'
+                    type="submit" name="acion"
+                    value="order">Buy</button>
+                    {% endfor %}
+                </form>
             </div>
         </div>
     </div>
