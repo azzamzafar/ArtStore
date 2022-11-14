@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 
-
 <div class="row" style="width:80%; margin-left:20px;margin-top:10px;">
     {% for product in page_obj %}
     <div class="col col-md-4" style="margin-top:10px;">
@@ -17,11 +16,14 @@
                 {% endif %}
                 <p class="card-text">{{ product.description }} </p>
                 <strong> Amount: Rs {{ product.amount }}</strong>
-                <form method="post"></form>
-                <!-- {{ item_formset.management_form}}
-                {% for form in item_formset %} -->
+                <form method="post">
+                    {% csrf_token %}
+                    {% comment %}
+                <!-- {{ item_formset.management_form}} -->
+                <!-- {% for form in item_formset %} -->
+                    {% endcomment %}
                         <strong>
-                             Qty:{{ my_form.Qty }}   
+                             Qty:{{ form.Qty }}   
                         </strong>
                         <input type="hidden" value="{{ product.id }}" name="product">
 
@@ -30,7 +32,6 @@
                     <button class='btn btn-primary'
                     type="submit" name="acion"
                     value="order">Buy</button>
-                    {% endfor %}
                 </form>
             </div>
         </div>

@@ -14,4 +14,4 @@ class ItemsForm(forms.ModelForm):
     Qty = forms.IntegerField(widget=forms.Select(choices=choices))
 
 # OrdersFormSet = forms.formset_factory(OrdersForm)
-# ItemsFormSet = forms.modelformset_factory(Item,form=ItemsForm,exclude=['price'])
+ItemsFormSet = forms.modelformset_factory(Item,form=ItemsForm,exclude=['price'])
