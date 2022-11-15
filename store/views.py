@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.db.models import Sum
-from django.views.generic import DetailView, FormView, ListView
+from django.views.generic import DetailView, FormView
 from django.views.generic.list import MultipleObjectMixin
 
 from store.forms import ItemsForm
@@ -21,16 +21,16 @@ class ProductListView(MultipleObjectMixin, FormView):
         if self.request.POST.get('action')=='item':
             return redirect(self.request.path_info)
         elif self.request.POST.get('action')=='order':
-            return reverse('invoice')
+            return reverse('profile')
 
     def form_valid(self,form):
-                   
+        user = Customer.objects.filter(email=self.request.user)[0]
+
         if self.request.POST.get("action") == "item":
-            user = Customer.objects.filter(email = self.request.user)[0]
             cart_obj = Cart.objects.get_or_create(customer=user)[0]
-            product_id = form.cleaned_data.get("product")
+            product_id = form.cleaned_data.get("prod_id")
             prod_obj = Product.objects.filter(id=product_id)[0]
-            price = prod_obj.price
+            price = prod_obj.amount
             item_obj = Item.objects.create(
                 product=prod_obj,
                 price=price,
@@ -40,15 +40,14 @@ class ProductListView(MultipleObjectMixin, FormView):
             item_obj.save()
             
         elif self.request.POST.get("action")== "order":
-            user = Customer.objects.filter(email = self.request.user)[0]
             if self.request.user.is_anonymous:
-                redirect("login")
+                return redirect("login")
             elif not user.address1:
-                redirect("profile")
+                return reverse("profile")
             invoice_obj = Invoice.objects.get_or_create(customer=user)[0]
-            product_id = form.cleaned_data.get("product")
+            product_id = form.cleaned_data.get("prod_id")
             prod_obj = Product.objects.filter(id=product_id)[0]
-            price = prod_obj.price
+            price = prod_obj.amount
             order_obj = Order.objects.create(
                 product=prod_obj,
                 price=price,
@@ -70,7 +69,7 @@ class ProductListView(MultipleObjectMixin, FormView):
     def post(self, request, *args, **kwargs):
         form = ItemsForm(request.POST)
         if form.is_valid():
-            return self.form_valid(form)
+            return self.form_valid(form) 
         else:
             return self.form_invalid(form)
         
