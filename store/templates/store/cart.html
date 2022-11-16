@@ -1,6 +1,20 @@
 {% extends 'base.html' %}
 {% block content %}
 <strong> Your Cart </strong>
+
+<div class="row">
+    <div class="col col-md-4">
+        <form method="post">
+            {% csrf_token %}
+            <button class="btn btn-danger"type="submit"name="action"value="remove-all">
+                Clear Cart
+            </button>
+        </form>
+    </div>
+    <div class="col col-md-4">
+    <a href="{% url 'home' %}" class="btn btn-primary" type="button">Add Items</a>
+    </div>
+</div>
 <div class="row">
     <div class="col col-md-4">
         <h6> Total :{{ total }}</h6>
@@ -24,6 +38,13 @@
                 {% endif %}
                 <strong> Price: {{ item.price }}</strong>
                 <strong> Qty : {{ item.Qty }}</strong>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden"name="item_id"value="{{ item.id }}">
+                    <button class="btn btn-dark"type="submit"name="action"value="remove-item">
+                        Remove Item
+                    </button>
+                </form> 
             </div>
         </div>
     </div>

@@ -73,9 +73,6 @@ class ProductListView(MultipleObjectMixin, FormView):
         else:
             return self.form_invalid(form)
         
-        
-
-
 class ProductDetailView(DetailView):
     model = Product
     template_name: str = "store/product-detail.html"
@@ -83,10 +80,20 @@ class ProductDetailView(DetailView):
 @login_required(login_url='login')
 def cartview(request):
     my_cart = Cart.objects.get_or_create(customer=request.user)[0]
-    if Item.objects.filter(cart=my_cart):
+    if my_cart.user_items:
         my_cart.cart_Qty = Item.objects.filter(cart=my_cart).aggregate(Sum("Qty")).get("Qty__sum")
         my_cart.cart_total = Item.objects.filter(cart=my_cart).aggregate(Sum("order_amount")).get("order_amount__sum")
         my_items = my_cart.user_items.all()
+
+        if request.method=='POST':
+            if request.POST.get('action')=='remove-all':
+                for item in Item.objects.filter(cart=my_cart):
+                    item.delete()
+            elif request.POST.get('action')=='remove-item':
+                item_id = request.method.get('item_id')
+                item = Item.objects.filter(id=item_id)[0]
+                item.delete()
+            return redirect(request.path_info)
     return render(
         request,
         "store/cart.html",
