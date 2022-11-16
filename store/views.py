@@ -24,8 +24,10 @@ class ProductListView(MultipleObjectMixin, FormView):
             return reverse('profile')
 
     def form_valid(self,form):
-        user = Customer.objects.filter(email=self.request.user)[0]
 
+        if self.request.user.is_anonymous:
+            return redirect('login')
+        user = Customer.objects.filter(email=self.request.user)[0]
         if self.request.POST.get("action") == "item":
             cart_obj = Cart.objects.get_or_create(customer=user)[0]
             product_id = form.cleaned_data.get("prod_id")
@@ -40,9 +42,8 @@ class ProductListView(MultipleObjectMixin, FormView):
             item_obj.save()
             
         elif self.request.POST.get("action") == "order":
-            if self.request.user.is_anonymous:
-                return redirect("login")
-            elif not user.address1:
+            
+            if user.address1 is None:
                 return reverse("profile")
             invoice_obj = Invoice.objects.get_or_create(customer=user)[0]
             product_id = form.cleaned_data.get("prod_id")
@@ -65,7 +66,7 @@ class ProductListView(MultipleObjectMixin, FormView):
         context = super().get_context_data(**kwargs)
         context["form"] = ItemsForm()
         return context
-
+    
     def post(self, request, *args, **kwargs):
         form = ItemsForm(request.POST)
         if form.is_valid():
@@ -86,13 +87,22 @@ def cartview(request):
         my_items = my_cart.user_items.all()
 
         if request.method=='POST':
+            
             if request.POST.get('action')=='remove-all':
                 for item in Item.objects.filter(cart=my_cart):
                     item.delete()
             elif request.POST.get('action')=='remove-item':
-                item_id = request.method.get('item_id')
+                item_id = request.POST.get('item_id')
                 item = Item.objects.filter(id=item_id)[0]
                 item.delete()
+            elif request.POST.get('action')=='checkout':
+                
+                # if request.user.is_anonymous:
+                #     return redirect('login')   
+                if Customer.objects.filter(email=request.user)[0].address1 is None:
+                    return redirect('profile')
+                else:
+                    return redirect('home')
             return redirect(request.path_info)
     return render(
         request,
