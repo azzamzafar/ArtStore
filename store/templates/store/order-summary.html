@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<strong> Order Summary </strong>
+<div class="row">
+    <div class="col col-md-4">
+        <h6> Total :{{ total }}</h6>
+    </div>
+    <div class="col col-md-4">
+        <h6> Qty :{{ Qty }}</h6>
+    </div>
+</div>
+{% for order in my_orders %}
+<div class="row" style="width:80%; margin-left:20px;margin-top:10px;">
+    <div class="col col-md-4" style="margin-top:10px;">
+        <div class="card"style="width:18rem;height:15rem; background: #f6f6eb;">
+            <div class="card-body">
+                <h5 class="card-title" ><a href="{% url 'Product-detail' order.product.id %}">
+                    {{ order.product.name }}</a>
+                </h5>
+                {% if order.product.available %}
+                <h6 class="card-subtitle text-muted"> In Stock </h6>
+                {% else %}
+                <h6 class="card-subtitle text-muted"> Out of Stock </h6>
+                {% endif %}
+                <strong> Price: {{ order.price }}</strong>
+                <strong> Qty : {{ order.Qty }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

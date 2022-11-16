@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.db.models import Sum
 from django.views.generic import DetailView, FormView
 from django.views.generic.list import MultipleObjectMixin
-
+from django.contrib.auth.decorators import login_required
 from store.forms import ItemsForm
 from store.models import Cart, Invoice, Item, Order, Product
 from customers_auth.models import Customer
@@ -39,7 +39,7 @@ class ProductListView(MultipleObjectMixin, FormView):
             )
             item_obj.save()
             
-        elif self.request.POST.get("action")== "order":
+        elif self.request.POST.get("action") == "order":
             if self.request.user.is_anonymous:
                 return redirect("login")
             elif not user.address1:
@@ -80,19 +80,31 @@ class ProductDetailView(DetailView):
     model = Product
     template_name: str = "store/product-detail.html"
 
-
+@login_required(login_url='login')
 def cartview(request):
-    my_cart = Cart.objects.filter(customer=request.user)[0]
-    # my_items = Item.objects.filter(cart=my_cart)
-    my_cart.cart_Qty = Item.objects.filter(cart=my_cart).aggregate(Sum("Qty")).get("Qty__sum")
-    my_cart.cart_total = Item.objects.filter(cart=my_cart).aggregate(Sum("order_amount")).get("order_amount__sum")
-    my_items = my_cart.user_items.all()
+    my_cart = Cart.objects.get_or_create(customer=request.user)[0]
+    if Item.objects.filter(cart=my_cart):
+        my_cart.cart_Qty = Item.objects.filter(cart=my_cart).aggregate(Sum("Qty")).get("Qty__sum")
+        my_cart.cart_total = Item.objects.filter(cart=my_cart).aggregate(Sum("order_amount")).get("order_amount__sum")
+        my_items = my_cart.user_items.all()
     return render(
         request,
         "store/cart.html",
         {"total": my_cart.cart_total, "Qty": my_cart.cart_Qty, "my_items": my_items},
     )
 
+@login_required(login_url='login')
+def orderview(request):
+    if not Invoice.objects.filter(customer=request.user):
+        
+        return render(request,'store/order-summary.html',{'total':None,'Qty':None,'my_orders':None})
+    else:
+
+        my_invoice = Invoice.objects.filter(customer=request.user)[0]
+        my_invoice.total_amount = Order.objects.filter(invoice=my_invoice).aggregate(Sum('order_amount')).get('order_amount__sum')
+        my_invoice.total_Qty = Order.objects.filter(invoice=my_invoice).aggregate(Sum('Qty')).get('Qty__sum')
+        my_orders = my_invoice.user_orders.all()
+    return render(request,{'total':my_invoice.total_amount,'Qty':my_invoice.total_Qty,'my_orders':my_orders})
 
 # def cart(request):
 
