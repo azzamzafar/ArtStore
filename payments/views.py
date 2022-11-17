@@ -3,6 +3,7 @@ from operator import ge
 from typing import OrderedDict
 from urllib import response
 from django.db import DatabaseError
+from store.models import Invoice
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render,redirect
 import razorpay
@@ -20,7 +21,6 @@ def generate_signature(order_id,payment_id,key):
 
 
 def checkout(request):
-    # data = request.user.Order.objects.all()
     id = "rzp_test_wiAaeKveL6fg77"
     key = "thfUqxKGoWOoFDtOQWoteIgc"
      

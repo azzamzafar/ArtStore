@@ -34,7 +34,8 @@ class Invoice(models.Model):
     shipping_address = models.TextField(null=True)
 
     def save(self, *args, **kwargs):
-        self.shipping_address = self.customer.address1 + " " + self.customer.address2
+        if self.customer.address1 is not None and self.customer.address2 is not None:
+            self.shipping_address = self.customer.address1 + " " + self.customer.address2
         super(Invoice, self).save(*args, **kwargs)
 
 
@@ -59,7 +60,7 @@ class Order(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        self.price = self.product.price
+        self.price = self.product.amount
         total_price = self.price * self.Qty
         self.order_amount = total_price
         self.currency = "INR"

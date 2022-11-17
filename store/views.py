@@ -29,7 +29,7 @@ class ProductListView(MultipleObjectMixin, FormView):
             return redirect('login')
         user = Customer.objects.filter(email=self.request.user)[0]
         if self.request.POST.get("action") == "item":
-            cart_obj = Cart.objects.get_or_create(customer=user)[0]
+            cart_obj = Cart.objects.get_or_create(customer=self.request.user)[0]
             product_id = form.cleaned_data.get("prod_id")
             prod_obj = Product.objects.filter(id=product_id)[0]
             price = prod_obj.amount
@@ -45,7 +45,7 @@ class ProductListView(MultipleObjectMixin, FormView):
             
             if user.address1 is None:
                 return reverse("profile")
-            invoice_obj = Invoice.objects.get_or_create(customer=user)[0]
+            invoice_obj = Invoice.objects.get_or_create(customer=self.request.user)[0]
             product_id = form.cleaned_data.get("prod_id")
             prod_obj = Product.objects.filter(id=product_id)[0]
             price = prod_obj.amount
@@ -81,6 +81,7 @@ class ProductDetailView(DetailView):
 @login_required(login_url='login')
 def cartview(request):
     my_cart = Cart.objects.get_or_create(customer=request.user)[0]
+    my_items=None
     if my_cart.user_items:
         my_cart.cart_Qty = Item.objects.filter(cart=my_cart).aggregate(Sum("Qty")).get("Qty__sum")
         my_cart.cart_total = Item.objects.filter(cart=my_cart).aggregate(Sum("order_amount")).get("order_amount__sum")
@@ -123,6 +124,23 @@ def orderview(request):
         my_orders = my_invoice.user_orders.all()
     return render(request,{'total':my_invoice.total_amount,'Qty':my_invoice.total_Qty,'my_orders':my_orders})
 
+@login_required(login_url='login')
+def cart_order(request):
+    my_cart = Cart.objects.filter(customer=request.user)[0]
+    my_items = my_cart.user_items.all()
+    my_cart.cart_Qty = Item.objects.filter(cart=my_cart).aggregate(Sum("Qty")).get("Qty__sum")
+    my_cart.cart_total = Item.objects.filter(cart=my_cart).aggregate(Sum("order_amount")).get("order_amount__sum")
+    if request.method=='POST':
+        my_invoice = Invoice.objects.create(customer=request.user)
+        for item in Item.objects.filter(cart=my_cart):
+            product = Product.objects.filter(id=item.product.id)[0]
+            Order.objects.create(
+                product = product,
+                Qty = item.Qty,
+                invoice = my_invoice 
+            )
+        return redirect('checkout')
+    return render(request,'store/cart-order.html',{'total':my_cart.cart_total,'Qty':my_cart.cart_Qty,'my_items':my_items})
 # def cart(request):
 
 #     return render(request)
