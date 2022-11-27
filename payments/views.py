@@ -1,8 +1,3 @@
-from ast import Or
-from operator import ge
-from typing import OrderedDict
-from urllib import response
-from django.db import DatabaseError
 from store.models import Invoice
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render,redirect
@@ -21,17 +16,19 @@ def generate_signature(order_id,payment_id,key):
 
 
 def checkout(request):
+    
+    invoice = Invoice.objects.filter(customer=request.user).order_by('id').last()
+    invoice.other_fields()
     id = "rzp_test_wiAaeKveL6fg77"
     key = "thfUqxKGoWOoFDtOQWoteIgc"
-     
     client = razorpay.Client(auth=(id,key))
     client.set_app_details({"title" : "Django", "version" : "4.0.3"})
     DATA = {
-        "amount": 100,
-        "currency": "INR",
-        "receipt": "recieptidisastring",
+        "amount": invoice.total_amount*100,
+        "currency": invoice.user_orders.first().currency,
+        "receipt": f'{invoice.date}',
         "notes":{
-            "note1":"no-note"
+            "note1": f'{invoice.date}'
         }
     }
     thisorder = client.order.create(data=DATA)

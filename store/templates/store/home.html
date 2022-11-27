@@ -6,7 +6,7 @@
     <div class="col col-md-4" style="margin-top:10px;">
         <div class="card"style="width:18rem;height:15rem; background: #f6f6eb;">
             <div class="card-body">
-                <h5 class="card-title" ><a href="{% url 'Product-detail' product.id %}">
+                <h5 class="card-title" ><a href="{% url 'product-detail' product.id %}">
                     {{ product.name }}</a>
                 </h5>
                 {% if product.available %}
@@ -16,11 +16,10 @@
                 {% endif %}
                 <p class="card-text">{{ product.description }} </p>
                 <strong> Amount: Rs {{ product.amount }}</strong>
-                <form method="post">
+                <!-- <form method="post">
                     {% csrf_token %}
                     {% comment %}
-                <!-- {{ item_formset.management_form}} -->
-                <!-- {% for form in item_formset %} -->
+               
                     {% endcomment %}
                         <strong>
                              Qty:{{ form.Qty }}   
@@ -32,7 +31,7 @@
                     <button class='btn btn-primary'
                     type="submit" name="acion"
                     value="order">Buy</button>
-                </form>
+                </form> -->
             </div>
         </div>
     </div>

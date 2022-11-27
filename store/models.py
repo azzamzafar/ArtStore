@@ -27,24 +27,31 @@ class Product(models.Model):
 class Invoice(models.Model):
     customer = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="invoice"
-    )
-    total_amount = models.PositiveIntegerField(null=True)
-    total_Qty = models.PositiveSmallIntegerField(null=True)
-    date = models.DateField(auto_now_add=True)
+        )
+    total_amount = models.PositiveIntegerField(default=0)
+    total_Qty = models.PositiveSmallIntegerField(default=0)
+    date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=15,null=True)
     shipping_address = models.TextField(null=True)
-
-    def save(self, *args, **kwargs):
-        if self.customer.address1 is not None and self.customer.address2 is not None:
-            self.shipping_address = self.customer.address1 + " " + self.customer.address2
-        super(Invoice, self).save(*args, **kwargs)
+    def other_fields(self):
+        if self.user_orders:
+            self.total_amount = self.user_orders.all().aggregate(models.Sum('order_amount')).get('order_amount__sum')
+            self.total_Qty = self.user_orders.all().aggregate(models.Sum('Qty')).get('Qty__sum')
+        if self.customer.address1 and self.customer.address2:
+            self.shipping_address=self.customer.address1+" "+self.customer.address2
 
 
 class Cart(models.Model):
     customer = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="cart"
     )
-    total_amount = models.PositiveIntegerField(null=True)
-    total_Qty = models.PositiveSmallIntegerField(null=True)
+    total_amount = models.PositiveIntegerField(default=0)
+    total_Qty = models.PositiveSmallIntegerField(default=0)
+    def other_fields(self):
+        if self.user_items:
+            self.total_amount = self.user_items.all().aggregate(models.Sum('order_amount')).get('order_amount__sum')
+            self.total_Qty = self.user_items.all().aggregate(models.Sum('Qty')).get('Qty__sum')
+
 
 class Order(models.Model):
 

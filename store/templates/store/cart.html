@@ -18,7 +18,12 @@
     </div>
     <div class="col col-md-4">
         {% if my_items %}
-    <a href="{% url 'cart-order' %}" class="btn btn-primary" type="button">Checkout</a>
+        <form method="post">
+            {% csrf_token %}
+            <button class="btn btn-dark"type="submit"name="action"value="checkout">
+                Checkout
+            </button>
+        </form>
         {% endif %}
     </div>
 </div>
@@ -35,7 +40,7 @@
     <div class="col col-md-4" style="margin-top:10px;">
         <div class="card"style="width:18rem;height:15rem; background: #f6f6eb;">
             <div class="card-body">
-                <h5 class="card-title" ><a href="{% url 'Product-detail' item.product.id %}">
+                <h5 class="card-title" ><a href="{% url 'product-detail' item.product.id %}">
                     {{ item.product.name }}</a>
                 </h5>
                 {% if item.product.available %}

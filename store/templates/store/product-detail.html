@@ -12,8 +12,20 @@
         {% endif %}
         <p class="card-text">{{ object.description }} </p>
         <strong> Amount: Rs {{ object.amount }}</strong>
-        <a href="#" class="btn btn-primary">Cart</a>
-        <a href="#" class="btn btn-primary">Buy</a>
+        <form method="post">
+            {% csrf_token %}
+           
+                <strong>
+                     Qty:{{ form.Qty }}   
+                </strong>
+                <input type="hidden" value="{{ product.id }}" name="prod_id">
+
+            <button class='btn btn-primary' 
+            type="submit" name="action" value="item"> Cart </button>
+            <button class='btn btn-primary'
+            type="submit" name="action"
+            value="order">Buy</button>
+        </form>
     </div>
 </div>
 

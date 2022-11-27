@@ -22,7 +22,7 @@ def update_profile(request):
                 
                 Customer.objects.filter(email=request.user.email).update(phone=phone,country=country,state=state,city=city,address1=address1,address2=address2) 
                 
-                return redirect('http://127.0.0.1:8000/accounts/profile/',permanent=True)
+                return redirect(request.path_info)
         else:
             form = ContactForm()
     else:
