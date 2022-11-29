@@ -21,6 +21,7 @@ class Product(models.Model):
     available = models.BooleanField()
     quantity = models.PositiveSmallIntegerField()
     category = models.ManyToManyField(Category, related_name="products")
+    photo = models.ImageField(upload_to = 'products')
     amount = models.PositiveIntegerField()
 
 

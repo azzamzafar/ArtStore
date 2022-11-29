@@ -5,6 +5,7 @@
     {% for product in page_obj %}
     <div class="col col-md-4" style="margin-top:10px;">
         <div class="card"style="width:18rem;height:15rem; background: #f6f6eb;">
+            <img src="{{ product.photo.url }}" class="card-img-top" alt="...">
             <div class="card-body">
                 <h5 class="card-title" ><a href="{% url 'product-detail' product.id %}">
                     {{ product.name }}</a>

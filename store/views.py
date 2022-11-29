@@ -1,8 +1,5 @@
 from django.shortcuts import redirect, render
-from django.urls import reverse
-from django.db.models import Sum
 from django.views.generic import DetailView, ListView
-from django.views.generic.list import MultipleObjectMixin
 from django.views.generic.edit import FormMixin
 from django.contrib.auth.decorators import login_required
 from store.forms import ItemsForm
@@ -156,10 +153,16 @@ def cartview(request):
             if request.POST.get('action')=='remove-all':
                 for item in Item.objects.filter(cart=my_cart):
                     item.delete()
+                my_cart.total_amount = 0
+                my_cart.total_Qty = 0
             elif request.POST.get('action')=='remove-item':
                 item_id = request.POST.get('item_id')
                 item = Item.objects.filter(id=item_id)[0]
+                item_amount = item.order_amount
+                item_qty = item.Qty
                 item.delete()
+                my_cart.total_amount-=item_amount
+                my_cart.total_Qty-=item_qty
             elif request.POST.get('action')=='checkout':
                 
                 if Customer.objects.filter(email=request.user)[0].address1 is None:
