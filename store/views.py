@@ -1,77 +1,11 @@
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormMixin
 from django.contrib.auth.decorators import login_required
 from store.forms import ItemsForm
 from store.models import Cart, Invoice, Item, Order, Product
 from customers_auth.models import Customer
-
-# Create your views here.
-# class ProductListView(MultipleObjectMixin, FormView):
-#     queryset = Product.objects.order_by("amount")
-#     object_list = queryset
-#     # context_object_name = "Product_list"
-#     paginate_by: int = 9
-#     template_name = "store/home.html"
-#     form_class = ItemsForm
-
-#     def get_success_url(self):
-#         if self.request.POST.get('action')=='item':
-#             return redirect(self.request.path_info)
-#         elif self.request.POST.get('action')=='order':
-#             return redirect('profile')
-
-#     def form_valid(self,form):
-
-#         if self.request.user.is_anonymous:
-#             return redirect('login')
-#         user = Customer.objects.filter(email=self.request.user)[0]
-#         if self.request.POST.get("action") == "item":
-#             cart_obj = Cart.objects.get_or_create(customer=self.request.user)[0]
-#             product_id = form.cleaned_data.get("prod_id")
-#             prod_obj = Product.objects.filter(id=product_id)[0]
-#             price = prod_obj.amount
-#             item_obj = Item.objects.create(
-#                 product=prod_obj,
-#                 price=price,
-#                 Qty=form.cleaned_data.get("Qty"),
-#                 cart=cart_obj,
-#             )
-#             item_obj.save()
-#             cart_obj.other_fields()
-#         elif self.request.POST.get("action") == "order":
-            
-#             if user.address1 is None:
-#                 return reverse("profile")
-#             invoice_obj = Invoice.objects.get_or_create(customer=self.request.user)[0]
-#             product_id = form.cleaned_data.get("prod_id")
-#             prod_obj = Product.objects.filter(id=product_id)[0]
-#             price = prod_obj.amount
-#             order_obj = Order.objects.create(
-#                 product=prod_obj,
-#                 price=price,
-#                 Qty=form.cleaned_data.get("Qty"),
-#                 invoice=invoice_obj,
-#             )
-#             order_obj.save()
-#         return self.get_success_url()
-
-#     def form_invalid(self, form):
-#         return super().form_invalid(form)
-    
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context["form"] = ItemsForm()
-#         return context
-    
-
-#     def post(self, request, *args, **kwargs):
-#         form = ItemsForm(request.POST)
-#         if form.is_valid():
-#             return self.form_valid(form) 
-#         else:
-#             return self.form_invalid(form)
       
 class ProductListView(ListView):
     queryset = Product.objects.order_by("amount")
@@ -90,35 +24,31 @@ class ProductDetailView(FormMixin,DetailView):
             return redirect(self.request.path_info)
         elif self.request.POST.get('action')=='order':
             return redirect('cart-order')
-
-    def post(self,request,*args,**kwargs):
-        if not request.user.is_authenticated:
-            redirect('login')
-        form = ItemsForm(request.POST)
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
-
-    def form_invalid(self, form):
-        return super().form_invalid(form)
     
     def form_valid(self,form):
         
         user = Customer.objects.filter(email=self.request.user)[0]
         if self.request.POST.get("action") == "item":
-            cart_obj = Cart.objects.get_or_create(customer=self.request.user)[0]
+            cart_obj,cart = Cart.objects.get_or_create(customer=self.request.user)
             product_id = form.cleaned_data.get("prod_id")
-            prod_obj = Product.objects.filter(id=product_id)[0]
-            price = prod_obj.amount
-            item_obj = Item.objects.create(
-                product=prod_obj,
-                price=price,
-                Qty=form.cleaned_data.get("Qty"),
-                cart=cart_obj,
-            )
-            item_obj.save()
-            cart_obj.other_fields()
+            
+            if product_id in cart_obj.user_items.values_list('product',flat=True):
+
+                item = Item.objects.get(product=product_id)
+                item.Qty+=1
+                item.save()
+            else:
+                prod_obj = Product.objects.filter(id=product_id)[0]
+                price = prod_obj.amount
+                item_obj = Item.objects.create(
+                    product=prod_obj,
+                    price=price,
+                    Qty=form.cleaned_data.get("Qty"),
+                    cart=cart_obj,
+                )
+                item_obj.save()
+                cart_obj.other_fields()
+
         elif self.request.POST.get("action") == "order":
            
             if user.address1 is None:
@@ -136,6 +66,19 @@ class ProductDetailView(FormMixin,DetailView):
             order_obj.save()
             invoice_obj.other_fields()
         return self.get_success_url()
+    
+    def form_invalid(self, form):
+        return super().form_invalid(form)
+    
+    
+    def post(self,request,*args,**kwargs):
+        if self.request.user.is_anonymous:
+            return redirect(reverse('login'))
+        form = ItemsForm(request.POST)
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
 
 @login_required(login_url='login')
