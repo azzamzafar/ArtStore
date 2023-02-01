@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="card"style="width:18rem;height:20rem; background: #f6f6eb;">
+<div style="display:flex; justify-content:center;width:auto;">
+<div style="width: fit-content;"class="card" background: #f6f6eb;">
     <div class="card-body">
-        <img src="{{ object.photo.url }}"/>
+        <img style="object-fit: contain;"src="{{ object.photo.url }}"/>
         <h5 class="card-title">
             {{ object.name }}
         </h5>
@@ -29,5 +30,6 @@
         </form>
     </div>
 </div>
-
+</div>
+</div>
 {% endblock %}

@@ -52,9 +52,17 @@
                 <strong> Qty : {{ item.Qty }}</strong>
                 <form method="post">
                     {% csrf_token %}
-                    <input type="hidden"name="item_id"value="{{ item.id }}">
                     <button class="btn btn-dark"type="submit"name="action"value="remove-item">
                         Remove Item
+                    </button>
+                    <input type="hidden"name="item_id"value="{{ item.id }}">
+                    {% if Qty > 1 %}
+                    <button class="btn btn-dark"type="submit"name="action"value="decrease">
+                        -
+                    </button>
+                    {% endif %}
+                    <button class="btn btn-dark"type="submit"name="action"value="increase">
+                        +
                     </button>
                 </form> 
             </div>

@@ -1,9 +1,9 @@
-from store.models import Invoice
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render,redirect
 import razorpay
 from django.views.decorators.csrf import csrf_exempt
 import hmac,hashlib
+from store_funcs import get_last_invoice,decrease_product_quantity,empty_cart
 # Create your views here.
 
 def generate_signature(order_id,payment_id,key):
@@ -17,15 +17,14 @@ def generate_signature(order_id,payment_id,key):
 
 def checkout(request):
     
-    invoice = Invoice.objects.filter(customer=request.user).order_by('id').last()
-    invoice.other_fields()
+    invoice = get_last_invoice(request.user) 
     id = "rzp_test_wiAaeKveL6fg77"
     key = "thfUqxKGoWOoFDtOQWoteIgc"
     client = razorpay.Client(auth=(id,key))
     client.set_app_details({"title" : "Django", "version" : "4.0.3"})
     DATA = {
         "amount": invoice.total_amount*100,
-        "currency": invoice.user_orders.first().currency,
+        "currency": invoice.orders.first().currency,
         "receipt": f'{invoice.date}',
         "notes":{
             "note1": f'{invoice.date}'
@@ -73,12 +72,19 @@ def paymenthandler(request):
         # result = client.utility.verify_payment_signature(response_params)
         assert generated_signature==response_params['razorpay_signature'], \
         "type mismatch or value not equal b/w generated_signature and returned signature"
-        
+        invoice = get_last_invoice(request.user)
+        #PAYMENT SUCCESS
         if client.payment.fetch(response_params['razorpay_payment_id'])['status']=='captured':
             print('captured')
+            invoice.status='captured'
+            invoice.save()
+            decrease_product_quantity(invoice)
+            empty_cart(invoice,request.user)
             return redirect(success,permanent=True)
-        
+        #PAYMENT FAILURE 
         elif client.payment.fetch(response_params['razorpay_payment_id'])['status']=='failed':
+            invoice.status='failed'
+            invoice.save()
             return redirect(failure,permanent=True)
 
     else:

@@ -4,7 +4,7 @@
 <div class="row" style="width:80%; margin-left:20px;margin-top:10px;">
     {% for product in page_obj %}
     <div class="col col-md-4" style="margin-top:10px;">
-        <div class="card"style="width:18rem;height:15rem; background: #f6f6eb;">
+        <div class="card" background: #f6f6eb;">
             <img src="{{ product.photo.url }}" class="card-img-top" alt="...">
             <div class="card-body">
                 <h5 class="card-title" ><a href="{% url 'product-detail' product.id %}">

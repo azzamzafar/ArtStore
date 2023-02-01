@@ -3,14 +3,14 @@ from django.urls import reverse
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from store.forms import ItemsForm
-from store.models import Cart, Invoice, Item, Order, Product
+from store.models import Cart, Invoice, Item, Product,Order
 from customers_auth.models import Customer
       
 class ProductListView(ListView):
     queryset = Product.objects.order_by("amount")
     object_list = queryset
-    # context_object_name = "Product_list"
     paginate_by: int = 9
     template_name = "store/home.html"
 
@@ -29,42 +29,41 @@ class ProductDetailView(FormMixin,DetailView):
         
         user = Customer.objects.filter(email=self.request.user)[0]
         if self.request.POST.get("action") == "item":
-            cart_obj,cart = Cart.objects.get_or_create(customer=self.request.user)
-            product_id = form.cleaned_data.get("prod_id")
-            
-            if product_id in cart_obj.user_items.values_list('product',flat=True):
-
-                item = Item.objects.get(product=product_id)
-                item.Qty+=1
-                item.save()
+            cart,created = Cart.objects.get_or_create(customer=user)
+            p_id = form.cleaned_data.get("prod_id")
+            Qty = form.cleaned_data.get('Qty')
+            prod = Product.objects.get(id=p_id)
+            if Qty>prod.quantity:
+                messages.add_message(self.request,messages.ERROR,'Requested Qty not allowed') 
+                return redirect(self.request.path_info)
+            elif p_id not in cart.items.values_list('product_id',flat=True):
+                item = Item.objects.create(
+                    product=prod,
+                    Qty=Qty)
+                cart.items.add(item)
+                cart.save()
             else:
-                prod_obj = Product.objects.filter(id=product_id)[0]
-                price = prod_obj.amount
-                item_obj = Item.objects.create(
-                    product=prod_obj,
-                    price=price,
-                    Qty=form.cleaned_data.get("Qty"),
-                    cart=cart_obj,
-                )
-                item_obj.save()
-                cart_obj.other_fields()
+                messages.add_message(self.request,messages.INFO,"Item is already present in your Cart!")
+                return redirect(self.request.path_info)
+                
 
         elif self.request.POST.get("action") == "order":
            
             if user.address1 is None:
                 return redirect("profile")
-            invoice_obj = Invoice.objects.create(customer=self.request.user)
-            product_id = form.cleaned_data.get("prod_id")
-            prod_obj = Product.objects.filter(id=product_id)[0]
-            price = prod_obj.amount
-            order_obj = Order.objects.create(
-                product=prod_obj,
-                price=price,
-                Qty=form.cleaned_data.get("Qty"),
-                invoice=invoice_obj,
-            )
-            order_obj.save()
-            invoice_obj.other_fields()
+            invoice = Invoice.objects.create(customer=user)
+            p_id = form.cleaned_data.get("prod_id")
+            Qty = form.cleaned_data.get('Qty')
+            prod = Product.objects.get(id=p_id)
+            if Qty<=prod.quantity:
+                item = Item.objects.create(
+                    product=prod,
+                    Qty=Qty)
+                invoice.orders.add(item)
+                invoice.save()
+            else:
+                messages.add_message(self.request,messages.ERROR,'Requested Qty not allowed') 
+                return redirect(self.request.path_info)
         return self.get_success_url()
     
     def form_invalid(self, form):
@@ -83,74 +82,65 @@ class ProductDetailView(FormMixin,DetailView):
 
 @login_required(login_url='login')
 def cartview(request):
-    my_cart = Cart.objects.get_or_create(customer=request.user)[0]
-    my_cart.other_fields()
+    customer = Customer.objects.get(email=request.user)
+    cart = Cart.objects.get_or_create(customer=customer)[0]
     my_items=None
-    if my_cart.user_items:
-        # my_cart.cart_Qty = Item.objects.filter(cart=my_cart).aggregate(Sum("Qty")).get("Qty__sum")
-        # my_cart.cart_total = Item.objects.filter(cart=my_cart).aggregate(Sum("order_amount")).get("order_amount__sum")
-        my_items = my_cart.user_items.all()
+    if cart.items.exists():
+        my_items = cart.items.all()
 
         if request.method=='POST':
             
             if request.POST.get('action')=='remove-all':
-                for item in Item.objects.filter(cart=my_cart):
+                for item in Item.objects.filter(cart=cart):
                     item.delete()
-                my_cart.total_amount = 0
-                my_cart.total_Qty = 0
+                cart.total_amount = 0
+                cart.total_Qty = 0
             elif request.POST.get('action')=='remove-item':
                 item_id = request.POST.get('item_id')
                 item = Item.objects.filter(id=item_id)[0]
-                item_amount = item.order_amount
-                item_qty = item.Qty
+                cart.items.remove(item)
+                cart.save()
                 item.delete()
-                my_cart.total_amount-=item_amount
-                my_cart.total_Qty-=item_qty
             elif request.POST.get('action')=='checkout':
                 
-                if Customer.objects.filter(email=request.user)[0].address1 is None:
+                if customer.address1 is None:
                     return redirect('profile')
                 else:
-                    my_invoice = Invoice.objects.create(customer=request.user)
-                    qty_sum=0
-                    amount_sum=0
+                    invoice = Invoice.objects.create(customer=customer)
                     for item in my_items:
-                        product = Product.objects.filter(id=item.product.id)[0]
-                        Order.objects.create(
-                            product = product,
-                            Qty = item.Qty,
-                            invoice = my_invoice 
-                        )
-                        # qty_sum+=item.Qty
-                        # amount_sum+=item.order_amount
-                    # my_invoice.total_Qty = qty_sum
-                    # my_invoice.total_amount = amount_sum
-                    my_invoice.other_fields()
+                        prod = Product.objects.get(id=item.product_id)
+                        qty = item.Qty
+                        order = Order.objects.create(
+                            product=prod,
+                            Qty=qty)
+                        invoice.orders.add(order)
+                    invoice.save()
                     return redirect('cart-order')
+            elif request.POST.get('action')=="increase":
+                ...
+                item_id = request.POST.get('item_id')
+                item = Item.objects.filter(id=item_id)[0]
+                item.Qty+=1
+                item.save()
+                cart.save()
+            elif request.POST.get('action')=="decrease":
+                item_id = request.POST.get('item_id')
+                item = Item.objects.filter(id=item_id)[0]
+                item.Qty-=1
+                item.save()
+                cart.save()
+
+
     return render(
         request,
         "store/cart.html",
-        {"total": my_cart.total_amount, "Qty": my_cart.total_Qty, "my_items": my_items},
+        {"total": cart.total_amount, "Qty": cart.total_Qty, "my_items": my_items},
     )
 
 def cart_order(request):
-    my_invoice = Invoice.objects.filter(customer=request.user).order_by('id').latest('id')
-    my_invoice.other_fields()
-    print(my_invoice)
-    print(my_invoice.total_amount)
-    my_orders = my_invoice.user_orders.all()
+    invoice = Invoice.objects.filter(customer=request.user).order_by('id').latest('id')
+    print(invoice)
+    print(invoice.total_amount)
+    my_orders = invoice.orders.all()
     
-    return render(request,'store/cart-order.html',{'my_orders':my_orders,'total':my_invoice.total_amount,'Qty':my_invoice.total_Qty})
-
-# def cart(request):
-
-#     return render(request)
-# Function List View with Pagination
-# def home(request):
-
-#     Products = Product.objects.all()
-#     # print(Products.values_list('name',flat=True)[0])
-#     paginator = Paginator(Products,9)
-#     page_number = request.GET.get('page')
-#     page_obj = paginator.get_page(page_number)
-#     return render(request, 'store/home.html',{'page_obj':page_obj})
+    return render(request,'store/cart-order.html',{'my_orders':my_orders,'total':invoice.total_amount,'Qty':invoice.total_Qty})

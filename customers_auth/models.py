@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.utils.translation import gettext_lazy as _
 import csv
 from phonenumber_field.modelfields import PhoneNumberField
-from store.models import Order,Cart
 # Create your models here.
 city_values = []
 state_values = []

@@ -6,22 +6,25 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import PermissionDenied
-from store.models import Product
+from store.models import Product, Cart, Invoice
 from store.api.permissions import (
     has_permissions,
     has_object_permissions,
     is_admin,
 )
 from store.api.authentication import verify_user, get_tokens, verify_tokens
+
 # from store.api.validation import validate_input
+from django.core.exceptions import ObjectDoesNotExist
+
 
 def obj_to_dict(obj):
     # fields = obj.__dict__.items()
     fields = obj._meta.get_fields()
     obj_dict = {}
-    
+
     for field in fields:
-        field_Val = getattr(obj,field.name)
+        field_Val = getattr(obj, field.name)
 
         if field.get_internal_type() == "ForeignKey":
             continue
@@ -30,8 +33,8 @@ def obj_to_dict(obj):
             obj_dict[field.name] = field_Val.values()[0]
 
         elif field.get_internal_type() == "FileField" and field_Val.width:
-            with open(field_Val.path,'rb') as img:
-                image_data = str(base64.b64encode(img.read()),'utf-8')
+            with open(field_Val.path, "rb") as img:
+                image_data = str(base64.b64encode(img.read()), "utf-8")
                 # image_data = base64img.decode('utf-8')
                 obj_dict[field.name] = image_data
 
@@ -44,7 +47,7 @@ def generate_tokens(request):
     user = verify_user(request)
     if user:
         token = get_tokens(user)
-        return JsonResponse({'token': token})
+        return JsonResponse({"token": token})
     else:
         raise PermissionDenied("Wrong Credentials")
 
@@ -62,8 +65,7 @@ def product_list(request):
         product = Product.objects.create(**product_data)
         return HttpResponse(
             status=HTTPStatus.CREATED,
-            headers={"Location": reverse(
-                "api_product_list", args=(product.pk))},
+            headers={"Location": reverse("api_product_list", args=(product.pk))},
         )
     return HttpResponseNotAllowed(["GET", "POST"])
 
@@ -88,4 +90,14 @@ def product_detail(request, pk):
         return HttpResponse(status=HTTPStatus.NO_CONTENT)
     return HttpResponse(status=HttpResponseNotAllowed(["GET", "PUT", "DELETE"]))
 
-
+@verify_tokens
+@is_admin
+def product_stats(request,pk):
+    if request.method=="GET":
+        carts_count = Cart.objects.filter(
+            user_items__product_id=pk).distinct().count()
+        orders_count = Invoice.objects.filter(
+            user_orders__product_id=pk,status='captured'
+        ).distinct().count()
+        return JsonResponse({'prod_in_carts':carts_count,'orders_count':orders_count})
+    return HttpResponse(status=HttpResponseNotAllowed(["GET", "PUT", "DELETE"]))
