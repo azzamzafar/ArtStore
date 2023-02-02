@@ -3,7 +3,7 @@ from django.shortcuts import render,redirect
 import razorpay
 from django.views.decorators.csrf import csrf_exempt
 import hmac,hashlib
-from store_funcs import get_last_invoice,decrease_product_quantity,empty_cart
+from .store_funcs import get_last_invoice,decrease_product_quantity,empty_cart
 # Create your views here.
 
 def generate_signature(order_id,payment_id,key):

@@ -5,6 +5,7 @@ from http import HTTPStatus
 from django.core.exceptions import ObjectDoesNotExist
 from store.api.permissions import is_admin
 from store.api.authentication import verify_tokens
+from store.api.serializers import obj_to_dict
 from store.models import Invoice
 from customers_auth.models import Customer
 
@@ -16,13 +17,13 @@ def myorders(request):
         if days:
             try:
                 orders = Invoice.objects.filter(date__gte=timezone.now()-timedelta(days=days),customer=request.user,status='captured')
-                return JsonResponse(relatedobj_to_dict(orders))
+                return JsonResponse(obj_to_dict(orders))
             except ObjectDoesNotExist:
                 return HttpResponse(status=HTTPStatus.NOT_FOUND)
         else:
             try:
                 invoice = Invoice.objects.get(customer=request.user).order_by('-id').latest()
-                return JsonResponse(relatedobj_to_dict(invoice))
+                return JsonResponse(obj_to_dict(invoice))
             except ObjectDoesNotExist:
                 return HttpResponse(status=HTTPStatus.NOT_FOUND)
     return HttpResponseNotAllowed(["GET"])
@@ -37,7 +38,7 @@ def user_orders(request):
             user = Customer.objects.get(email=email)
             try:
                 orders = Invoice.objects.filter(date__gte=timezone.now()-timedelta(days=days),customer=user,status='captured')
-                return JsonResponse(relatedobj_to_dict(orders))
+                return JsonResponse(obj_to_dict(orders))
             except ObjectDoesNotExist:
                 return HttpResponse(status=HTTPStatus.NOT_FOUND)
         

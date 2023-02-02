@@ -4,9 +4,13 @@ from django.conf import settings
 
 class Category(models.Model):
     value = models.CharField(_("category"), max_length=100)
-
+    slug = models.SlugField(_("slug"),max_length=100,blank=True,null=False)
     def __str__(self):
         return str(self.value)
+    def save(self,*args,**kwargs):
+        value_tokens = self.value.split()
+        self.slug = "_".join(value_tokens)
+        super(Category,self).save(*args,**kwargs)
 
 
 class Product(models.Model):
