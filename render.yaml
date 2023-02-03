@@ -3,7 +3,7 @@ services:
     name: ArtStore
     env: python 
     buildCommand: "./build.sh"
-    startCommand: "gunicorn Project.wsgi:application"
+    startCommand: "gunicorn project.wsgi:application"
     envVars:
       - key: SECRET_KEY
         generateValue: true
