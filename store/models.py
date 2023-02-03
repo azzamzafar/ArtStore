@@ -4,12 +4,14 @@ from django.conf import settings
 
 class Category(models.Model):
     value = models.CharField(_("category"), max_length=100)
-    slug = models.SlugField(_("slug"),max_length=100,blank=True,null=False)
+    slug = models.SlugField(_("slug"),unique=True,max_length=100,blank=True,null=False)
+    class Meta:
+        verbose_name_plural = "Categories"
     def __str__(self):
         return str(self.value)
     def save(self,*args,**kwargs):
         value_tokens = self.value.split()
-        self.slug = "_".join(value_tokens)
+        self.slug = "_".join(value_tokens).lower()
         super(Category,self).save(*args,**kwargs)
 
 
