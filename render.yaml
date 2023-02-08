@@ -1,6 +1,6 @@
 databases:
   - name: artstoredb
-    databaseName: artstoredb
+    databaseName: artstoredb_avp5
     user: azzam
 services:
   - type: web
