@@ -6,7 +6,7 @@ pip install -r requirements.txt
 
 python3 manage.py makemigrations
 python3 manage.py migrate
-if [[ $CREATE_SUPERUSER ]];
+if [ "$CREATE_SUPERUSER}" == "TRUE" ];
 then
   python3 manage.py createsuperuser --no-input
 fi
