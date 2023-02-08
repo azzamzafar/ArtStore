@@ -92,21 +92,20 @@ class Dev(Configuration):
     ]
 
     WSGI_APPLICATION = "project.wsgi.application"
-
-
     # Database
     # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
+    # user = os.environ.get('db_user')
+    # password = os.environ.get('db_password')
+    # host = os.environ.get('db_hostname')
+    # port = os.environ.get('db_port')
+    # dbname = os.environ.get('db_name')
+    db_internal_url = os.environ.get('db_internal_url')
     DATABASES = {
-        # "default": {
-        #     "ENGINE": "django.db.backends.sqlite3",
-        #     "NAME": BASE_DIR / "db.sqlite3",
-        # },
+       
         "default":
-        dj_database_url.config(default=f"sqlite:///{BASE_DIR}/db.sqlite3"),
-        "alternative":
-        dj_database_url.config("Alternative_database_url",
-        default=f"sqlite:///{BASE_DIR}/alternative_db.sqlite3")
+        dj_database_url.config(
+            default=f"{db_internal_url}",
+            conn_max_age=600),
     }
 
 
