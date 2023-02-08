@@ -4,7 +4,7 @@ set -o errexit
 
 pip install -r requirements.txt
 
-python3 manage.py makemigrations
+python3 manage.py makemigrations customers_auth store payments
 python3 manage.py migrate
 if [ "$CREATE_SUPERUSER}" == "TRUE" ];
 then

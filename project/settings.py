@@ -106,6 +106,9 @@ class Dev(Configuration):
         dj_database_url.config(
             default=f"{db_internal_url}",
             conn_max_age=600),
+        # "default": 
+        # dj_database_url.config(default=f"sqlite:///{BASE_DIR}/db.sqlite3"),
+
     }
 
 
