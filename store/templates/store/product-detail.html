@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
+{% load my_filters %}
 {% block content %}
 <div style="display:flex; justify-content:center;width:auto;">
 <div style="width: fit-content;"class="card" background: #f6f6eb;">
     <div class="card-body">
-        <img style="object-fit: contain;"src="{{ object.photo.url }}"/>
+        <img style="object-fit: contain;"src="data:image/png;base64,{{ product.photo | bin_2_img }}">
         <h5 class="card-title">
             {{ object.name }}
         </h5>

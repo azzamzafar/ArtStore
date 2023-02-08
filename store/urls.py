@@ -5,5 +5,5 @@ urlpatterns = [
     path("<int:pk>/",ProductDetailView.as_view(),name='product-detail'),
     path('cart/',cartview,name='cart'),
     path('cart/order/',cart_order,name='cart-order'),
-    path('category/<slug:slug>/',ProductCategoryView.as_view(),name='category_view')
-]
+    path('category/<slug:slug>/',ProductCategoryView.as_view(),name='category_view'),
+] 

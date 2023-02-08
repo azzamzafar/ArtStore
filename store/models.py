@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
@@ -19,8 +20,16 @@ class Product(models.Model):
     available = models.BooleanField()
     quantity = models.PositiveSmallIntegerField()
     category = models.ManyToManyField(Category, related_name="products")
-    photo = models.ImageField(upload_to = 'products')
+    photo = models.BinaryField(verbose_name="image",blank=False,null=False,editable=True)
     amount = models.PositiveIntegerField()
+    
+    def photo_tag(self):
+        from base64 import b64encode
+        lenmax = lenmax = len(self.photo) - len(self.photo)%4
+        return mark_safe('<img src = "data: image/png; base64, {}" width="200" height="100">'.format(b64encode(self.photo[0:lenmax]).decode('utf8'))
+        )
+    photo_tag.short_description = "Image"
+    photo_tag.allow_tags = True
 
 class Item(models.Model):
    

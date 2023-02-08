@@ -154,13 +154,3 @@ class ProductCategoryView(ListView):
         print(Product.objects.filter(category__slug=self.kwargs.get('slug')).order_by('amount'))
         return Product.objects.filter(category__slug=self.kwargs['slug']).order_by('amount')
     object_list=queryset
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['object_list'] = self.object_list
-    #     return context
-    # def get(self,request,*args,**kwargs):
-    #     queryset = self.get_queryset()
-    #     paginator = Paginator(queryset, self.paginate_by)
-    #     page = self.request.GET.get('page')
-    #     self.object_list = paginator.get_page(page)
-    #     return super().get(request, *args, **kwargs)

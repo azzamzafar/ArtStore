@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
+{% load my_filters %}
 {% block content %}
 
 <div class="row" style="display:flex;justify-content:center;  margin-left:20px;margin-right:10px;margin-top:10px;">
     {% for product in page_obj %}
     <div class="col col-md-4" style="margin-top:10px;">
         <div class="card" background: #f6f6eb;">
-            <img src="{{ product.photo.url }}" class="card-img-top" alt="...">
+            <img src="data:image/png/jpg/jpeg;base64,{{ product.photo | bin_2_img }}" class="card-img-top" alt="...">
             <div class="card-body">
                 <h5 class="card-title" ><a href="{% url 'product-detail' product.id %}">
                     {{ product.name }}</a>
