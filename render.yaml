@@ -1,6 +1,6 @@
 databases:
   - name: artstoredb
-    databaseName: artstoredb_avp5
+    databaseName: artstoredb_ysoi
     user: azzam
 services:
   - type: web
@@ -11,8 +11,8 @@ services:
     envVars:
       - key: DATABASE_URL
           fromDatabase:
-            name: artstoredb
+            name: artstoredb_ysoi
             property: connectionString
       - key: SECRET_KEY
         generateValue: true
-       
+      
