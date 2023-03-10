@@ -18,14 +18,11 @@ def decrease_product_quantity(invoice):
         prod.save()
 
 def empty_cart(invoice,user):
-    customer = Customer.objects.get(customer=user)
+    customer = Customer.objects.get(email=user)
     if invoice.orders.all().count()>1:
         cart  = Cart.objects.get(customer=customer)
         for item in cart.items.all():
             item.delete()
         cart.save()
-    else:
-        Item.objects.last().delete()
-
 
     

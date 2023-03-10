@@ -102,16 +102,14 @@ class Dev(Configuration):
     db_internal_url = os.environ.get('db_internal_url')
     DATABASES = {
        
-        "default":
-        dj_database_url.config(
-            default=f"postgres://{user}:{password}@{host}:{port}/{dbname}",
-            conn_max_age=600),
-        # "default": 
-        # dj_database_url.config(default=f"sqlite:///{BASE_DIR}/db.sqlite3"),
+        # "default":
+        # dj_database_url.config(
+        #     default=f"postgres://{user}:{password}@{host}:{port}/{dbname}",
+        #     conn_max_age=600),
+        "default": 
+        dj_database_url.config(default=f"sqlite:///{BASE_DIR}/db.sqlite3"),
 
     }
-
-
     # Password validation
     # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 

@@ -28,7 +28,8 @@ def user_carts(request):
             try:
                 user = Customer.objects.get(email=email)
                 carts = Cart.objects.get(customer=user)
-                return JsonResponse(obj_to_dict(carts))
+                cart_dict = [obj_to_dict(c) for c in carts]    
+                return JsonResponse({'data':cart_dict})
             except ObjectDoesNotExist:
                 return HttpResponse(status=HTTPStatus.NOT_FOUND)
         return HttpResponse(status=HTTPStatus.BAD_REQUEST)

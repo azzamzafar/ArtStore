@@ -1,4 +1,5 @@
-import base64
+from base64 import b64encode
+import zlib
 
 def obj_to_dict(obj):
     # fields = obj.__dict__.items()
@@ -8,10 +9,9 @@ def obj_to_dict(obj):
     for field in fields:
         field_Val = getattr(obj, field.name)
 
-        if field.get_internal_type() == "ForeignKey":
-            continue
-
-        elif field.many_to_many:
+        # if field.get_internal_type() == "ForeignKey":
+        #     continue
+        if field.many_to_many:
             objects=[]
             for object in field_Val.values():
                 related_dict = {}
@@ -21,12 +21,14 @@ def obj_to_dict(obj):
                 objects.append(related_dict)
             obj_dict[field.name] = objects
 
-        elif field.get_internal_type() == "FileField" and field_Val.width:
-            with open(field_Val.path, "rb") as img:
-                image_data = str(base64.b64encode(img.read()), "utf-8")
-                # image_data = base64img.decode('utf-8')
-                obj_dict[field.name] = image_data
-
+        # elif field.get_internal_type() == "FileField" and field_Val.width:
+        #     with open(field_Val.path, "rb") as img:
+        #         image_data = str(base64.b64encode(img.read()), "utf-8")
+        #         # image_data = base64img.decode('utf-8')
+        #         obj_dict[field.name] = image_data
+        elif field.get_internal_type()=="BinaryField":
+            compressed_img = zlib.compress(field_Val)
+            obj_dict[field.name] =  b64encode(compressed_img).decode('utf8')
         else:
             obj_dict[field.name] = field_Val
     return obj_dict

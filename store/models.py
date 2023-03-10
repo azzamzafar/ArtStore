@@ -50,7 +50,7 @@ class Item(models.Model):
         self.currency = "INR"
         super(Item, self).save(*args, **kwargs)
 
-class   Order(models.Model):
+class Order(models.Model):
    
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="orders", null=True
@@ -82,17 +82,17 @@ class Invoice(models.Model):
         if self.orders.exists():
             self.total_amount = self.orders.all().aggregate(models.Sum('order_amount')).get('order_amount__sum')
             self.total_Qty = self.orders.all().aggregate(models.Sum('Qty')).get('Qty__sum')
-            super(Invoice, self).save(*args, **kwargs) 
+            super(Invoice, self).save() 
         elif self.total_amount!=0 and self.total_Qty!=0:
             self.total_amount=0
             self.total_Qty=0
-            super(Invoice, self).save(*args, **kwargs)
+            super(Invoice, self).save()
         if self.customer.address1 and self.customer.address2:
             self.shipping_address=self.customer.address1+" "+self.customer.address2
-            super(Invoice, self).save(*args, **kwargs)
+            super(Invoice, self).save()
         elif self.shipping_address is not None:
             self.shipping_address=None
-            super(Invoice, self).save(*args, **kwargs)
+            super(Invoice, self).save()
 
 class Cart(models.Model):
     customer = models.OneToOneField(
@@ -106,8 +106,8 @@ class Cart(models.Model):
         if self.items.exists():
             self.total_amount = self.items.all().aggregate(models.Sum('order_amount')).get('order_amount__sum')
             self.total_Qty = self.items.all().aggregate(models.Sum('Qty')).get('Qty__sum')
-            super(Cart, self).save(*args, **kwargs)
+            super(Cart, self).save()
         elif self.total_amount!=0 and self.total_Qty!=0:
             self.total_amount=0
             self.total_Qty=0
-            super(Cart,self).save(*args,**kwargs)
+            super(Cart,self).save()

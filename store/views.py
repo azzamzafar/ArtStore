@@ -57,10 +57,10 @@ class ProductDetailView(FormMixin,DetailView):
             Qty = form.cleaned_data.get('Qty')
             prod = Product.objects.get(id=p_id)
             if Qty<=prod.quantity:
-                item = Item.objects.create(
+                order = Order.objects.create(
                     product=prod,
                     Qty=Qty)
-                invoice.orders.add(item)
+                invoice.orders.add(order)
                 invoice.save()
             else:
                 messages.add_message(self.request,messages.ERROR,'Requested Qty not allowed') 

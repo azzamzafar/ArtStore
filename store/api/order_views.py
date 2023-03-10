@@ -17,7 +17,8 @@ def myorders(request):
         if days:
             try:
                 orders = Invoice.objects.filter(date__gte=timezone.now()-timedelta(days=days),customer=request.user,status='captured')
-                return JsonResponse(obj_to_dict(orders))
+                order_dict = [obj_to_dict(o) for o in orders]
+                return JsonResponse({'data':order_dict})
             except ObjectDoesNotExist:
                 return HttpResponse(status=HTTPStatus.NOT_FOUND)
         else:
@@ -38,28 +39,10 @@ def user_orders(request):
             user = Customer.objects.get(email=email)
             try:
                 orders = Invoice.objects.filter(date__gte=timezone.now()-timedelta(days=days),customer=user,status='captured')
-                return JsonResponse(obj_to_dict(orders))
+                order_dict = [obj_to_dict(o) for o in orders]
+                return JsonResponse({'data':order_dict})
             except ObjectDoesNotExist:
                 return HttpResponse(status=HTTPStatus.NOT_FOUND)
         
         return HttpResponse(status=HTTPStatus.BAD_REQUEST)
     return HttpResponseNotAllowed(["GET"])
-
-# @verify_tokens
-# @is_admin
-# def order_count(request):
-#     if request.method == "GET":
-#         product = request.GET.get("product,", "")
-#         if product:
-#             try:
-#                 return (
-#                     Cart.objects.filter(user_items__product_id=product)
-#                     .distinct()
-#                     .count()
-#                 )
-#             except ObjectDoesNotExist:
-#                 return HttpResponse(status=HTTPStatus.BAD_REQUEST)
-#         else:
-#             return HttpResponse(status=HTTPStatus.BAD_REQUEST)
-#     return HttpResponse(status=HttpResponseNotAllowed(["GET"]))
-
